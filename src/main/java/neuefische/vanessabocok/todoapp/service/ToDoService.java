@@ -25,7 +25,7 @@ public class ToDoService {
                 UUID.randomUUID().toString(),
                 toDoCreate.description(),
                 toDoCreate.status(),
-                LocalDateTime.now()
+                LocalDateTime.now().toString()
         );
         return toDoRepository.save(toDo);
     }
@@ -37,7 +37,7 @@ public class ToDoService {
     public ToDo updateToDo(ToDo toDo) {
         ToDo oldToDo = toDoRepository.findToDoById(toDo.id());
         toDoRepository.delete(oldToDo);
-        return toDoRepository.save(toDo.withLastModified(LocalDateTime.now()));
+        return toDoRepository.save(toDo.withLastModified(LocalDateTime.now().toString()));
     }
 
     public ToDo deleteToDoById(String id) {
