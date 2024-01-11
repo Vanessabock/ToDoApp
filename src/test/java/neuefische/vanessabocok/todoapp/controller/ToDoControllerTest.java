@@ -3,16 +3,24 @@ package neuefische.vanessabocok.todoapp.controller;
 import neuefische.vanessabocok.todoapp.models.Status;
 import neuefische.vanessabocok.todoapp.models.ToDo;
 import neuefische.vanessabocok.todoapp.repository.ToDoRepository;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -26,6 +34,29 @@ class ToDoControllerTest {
 
     @Autowired
     private ToDoRepository toDoRepository;
+
+    private static MockWebServer mockWebServer;
+
+    static {
+        System.setProperty("API_KEY", "someKey");
+        System.setProperty("ORG_KEY", "someOrg");
+    }
+
+    @BeforeAll
+    static void beforeAll() throws IOException {
+        mockWebServer = new MockWebServer();
+        mockWebServer.start();
+    }
+
+    @AfterAll
+    static void tearDown() throws IOException {
+        mockWebServer.shutdown();
+    }
+
+    @DynamicPropertySource
+    static void backendProperties(DynamicPropertyRegistry registry) {
+        registry.add("app.chatGpt.api.url", () -> mockWebServer.url("/").toString());
+    }
 
     @DirtiesContext
     @Test
@@ -79,13 +110,38 @@ class ToDoControllerTest {
     @Test
     void createToDo_shouldReturnOneObject_whenThisObjectWasSavedInRepository() throws Exception {
         //GIVEN
+        mockWebServer.enqueue(new MockResponse()
+                .setBody("""
+                            {
+                               "id": "chatcmpl-123",
+                               "object": "chat.completion",
+                               "created": 1677652288,
+                               "model": "gpt-3.5-turbo-0613",
+                               "system_fingerprint": "fp_44709d6fcb",
+                               "choices": [{
+                                 "index": 0,
+                                 "message": {
+                                   "role": "assistant",
+                                   "content": "Shopping"
+                                 },
+                                 "logprobs": null,
+                                 "finish_reason": "stop"
+                               }],
+                               "usage": {
+                                 "prompt_tokens": 9,
+                                 "completion_tokens": 12,
+                                 "total_tokens": 21
+                               }
+                             }
+                        """)
+                .addHeader("Content-Type", "application/json"));
 
         //WHEN
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.post("/api/todo")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                                 {
-                                   "description": "Shopping",
+                                   "description": "Shoping",
                                    "status": "OPEN"
                                 }
                                 """))

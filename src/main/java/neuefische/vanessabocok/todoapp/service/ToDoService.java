@@ -15,19 +15,26 @@ import java.util.UUID;
 public class ToDoService {
 
     private final ToDoRepository toDoRepository;
+    private final ChatGptService chatGptService;
 
     public List<ToDo> getAllToDos() {
         return toDoRepository.findAll();
     }
 
     public ToDo createToDo(ToDoCreate toDoCreate){
+        String correctedDescription = chatGPTGrammarCorrection(toDoCreate.description());
         ToDo toDo = new ToDo(
                 UUID.randomUUID().toString(),
-                toDoCreate.description(),
+                correctedDescription,
                 toDoCreate.status(),
                 LocalDateTime.now().toString()
         );
         return toDoRepository.save(toDo);
+    }
+
+    public String chatGPTGrammarCorrection(String description) {
+        return chatGptService.chatGpt("Grammar and Spelling Correction for " +
+                "input: " + description + ". Only return corrected version." );
     }
 
     public ToDo getToDoById(String id) {

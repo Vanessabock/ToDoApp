@@ -14,6 +14,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class ToDoServiceTest {
 
     ToDoRepository toDoRepository = Mockito.mock(ToDoRepository.class);
+    ChatGptService chatGptService = Mockito.mock(ChatGptService.class);
+
     @Test
     public void getAllToDosTest(){
         //GIVEN
@@ -22,7 +24,7 @@ class ToDoServiceTest {
                 new ToDo("2", "Learning", Status.IN_PROGRESS, "456")
         ));
 
-        ToDoService toDoService = new ToDoService(toDoRepository);
+        ToDoService toDoService = new ToDoService(toDoRepository, chatGptService);
 
         //WHEN
         List<ToDo> actual = toDoService.getAllToDos();
@@ -43,7 +45,7 @@ class ToDoServiceTest {
         Mockito.when(toDoRepository.save(Mockito.any())).thenReturn(
                 new ToDo("1", "Shopping", Status.OPEN, "123"));
 
-        ToDoService toDoService = new ToDoService(toDoRepository);
+        ToDoService toDoService = new ToDoService(toDoRepository, chatGptService);
 
         //WHEN
         ToDo actual = toDoService.createToDo(new ToDoCreate("Learning", Status.DONE));
@@ -53,6 +55,26 @@ class ToDoServiceTest {
 
         Mockito.verify(toDoRepository, Mockito.times(1)).save(Mockito.any());
         Mockito.verifyNoMoreInteractions(toDoRepository);
+        Mockito.verify(chatGptService, Mockito.times(1)).chatGpt(Mockito.any());
+        Mockito.verifyNoMoreInteractions(chatGptService);
+    }
+
+    @Test
+    public void chatGPTGrammarCorrectionTest(){
+        //GIVEN
+        Mockito.when(chatGptService.chatGpt(Mockito.any())).thenReturn(
+                "Shopping");
+
+        ToDoService toDoService = new ToDoService(toDoRepository, chatGptService);
+
+        //WHEN
+        String actual = toDoService.chatGPTGrammarCorrection("Shoping");
+
+        //THEN
+        assertEquals("Shopping", actual);
+
+        Mockito.verify(chatGptService, Mockito.times(1)).chatGpt(Mockito.any());
+        Mockito.verifyNoMoreInteractions(chatGptService);
     }
 
     @Test
@@ -61,7 +83,7 @@ class ToDoServiceTest {
         Mockito.when(toDoRepository.findToDoById(Mockito.any())).thenReturn(
                 new ToDo("1", "Shopping", Status.OPEN, "123"));
 
-        ToDoService toDoService = new ToDoService(toDoRepository);
+        ToDoService toDoService = new ToDoService(toDoRepository, chatGptService);
 
         //WHEN
         ToDo actual = toDoService.getToDoById("1");
@@ -81,7 +103,7 @@ class ToDoServiceTest {
         Mockito.when(toDoRepository.save(Mockito.any())).thenReturn(
                 new ToDo("1", "Shopping", Status.IN_PROGRESS, "123"));
 
-        ToDoService toDoService = new ToDoService(toDoRepository);
+        ToDoService toDoService = new ToDoService(toDoRepository, chatGptService);
 
         //WHEN
         ToDo actual = toDoService.updateToDo(new ToDo("1", "Shopping", Status.OPEN, "123"));
@@ -101,7 +123,7 @@ class ToDoServiceTest {
         Mockito.when(toDoRepository.findToDoById(Mockito.any())).thenReturn(
                 new ToDo("1", "Shopping", Status.OPEN, "123"));
 
-        ToDoService toDoService = new ToDoService(toDoRepository);
+        ToDoService toDoService = new ToDoService(toDoRepository, chatGptService);
 
         //WHEN
         ToDo actual = toDoService.deleteToDoById("1");
