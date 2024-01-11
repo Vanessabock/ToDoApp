@@ -3,6 +3,7 @@ package neuefische.vanessabocok.todoapp.service;
 import lombok.RequiredArgsConstructor;
 import neuefische.vanessabocok.todoapp.models.ToDo;
 import neuefische.vanessabocok.todoapp.models.ToDoCreate;
+import neuefische.vanessabocok.todoapp.models.chatGpt.DallEResponse;
 import neuefische.vanessabocok.todoapp.repository.ToDoRepository;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,8 @@ public class ToDoService {
                 toDoCreate.status(),
                 LocalDateTime.now().toString()
         );
+        // String response = chatGptService.dallE("...");
+        // System.out.println(response);
         return toDoRepository.save(toDo);
     }
 

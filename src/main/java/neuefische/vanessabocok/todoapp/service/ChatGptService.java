@@ -32,7 +32,7 @@ public class ChatGptService {
         ChatGptRequest requestBody = new ChatGptRequest(List.of(new ChatGptMessage("user", message)), "gpt-3.5-turbo");
 
         ChatGptResponse response = restClient.post()
-                .uri("/completions")
+                .uri("/chat/completions")
                 .body(requestBody)
                 .contentType(MediaType.APPLICATION_JSON)
                 .retrieve()
@@ -41,5 +41,22 @@ public class ChatGptService {
         assert response != null;
         return response.choices().get(0).message().content();
     }
+
+    /*public String dallE(String message) {
+
+        DallERequest requestBody = new DallERequest("dall-e-3",
+                message,
+                "1024x1024", "standard", 1);
+
+        DallEResponse response = restClient.post()
+                .uri("/images/generations")
+                .body(requestBody)
+                .contentType(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(DallEResponse.class);
+
+        assert response != null;
+        return response.toString();
+    }*/
 
 }
